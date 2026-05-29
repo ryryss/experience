@@ -60,7 +60,10 @@ optimizer.step()
 
 扩散过程的核心公式：
 
-$$ x_t = \sqrt{\alpha_t}x_0 + \sqrt{1-\alpha_t}\epsilon $$ 
+$$
+x_t = \sqrt { \alpha_t }x_0 + \sqrt {1 - \alpha_t } \epsilon
+$$
+
 其中： 
 - $x_0$ ：原始图片
 - $x_t$ ：第 $t$ 步后的带噪图片
@@ -68,9 +71,22 @@ $$ x_t = \sqrt{\alpha_t}x_0 + \sqrt{1-\alpha_t}\epsilon $$
 - $\epsilon$ ：高斯噪声（Gaussian Noise）
 
 
-含义： - 当 $t$ 增大时： $ \sqrt{1-\alpha_t}\epsilon $ 的占比会越来越大. 最终 $ x_t $ 会逐渐接近纯随机噪声.<br><br>
+含义：当 $t$ 增大时 $\sqrt {1-\alpha_t}\epsilon$ 的占比会越来越大. 最终 $x_t$ 会逐渐接近纯随机噪声.<br><br>
 
-Diffusion 模型训练的目标： 不是直接预测原图，而是预测噪声： $$ \epsilon_\theta(x_t, t) $$ 其中： - $\epsilon_\theta$ ：神经网络预测的噪声 - $x_t$ ：带噪图片 - $t$ ：当前 timestep --- 训练损失函数： $$ L = \left\|\epsilon - \epsilon_\theta(x_t,t)\right\|^2 $$ 这是一个 MSE（均方误差）损失。 含义： - $\epsilon$ ：真实加入的噪声 - $\epsilon_\theta(x_t,t)$ ：模型预测的噪声 训练目标： 让模型预测的噪声尽可能接近真实噪声。
+Diffusion 模型训练的目标, 不是直接预测原图，而是预测噪声：
+$$\epsilon_\theta(x_t, t)$$
+其中：
+- $\epsilon_\theta$ ：神经网络预测的噪声
+- $x_t$ ：带噪图片
+- $t$ ：当前 timestep
+
+训练损失函数：$$L = \left\|\epsilon - \epsilon_\theta(x_t,t)\right\|^2$$
+这是一个 MSE（均方误差）损失. 
+含义：
+- $\epsilon$ ：真实加入的噪声
+- $\epsilon_\theta(x_t,t)$ ：模型预测的噪声
+
+训练目标： 让模型预测的噪声尽可能接近真实噪声.
 <br><br>
 
 ## Tensor

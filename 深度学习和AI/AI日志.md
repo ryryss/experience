@@ -16,7 +16,7 @@ $$
 套上激活函数, 就变成了神经网络前向传播公式
 
 $$
-x^{k+1}_j=\sigma\left(\sum_i a^k_{i,j} , x^k_i+b^k_j\right)
+x^{k+1}_j= \sigma \left (\sum_i a^k_{i,j} , x^k_i+b^k_j \right)
 $$
 
 其中 $\sigma$ 表示激活函数
