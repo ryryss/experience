@@ -80,7 +80,7 @@ $$\epsilon_\theta(x_t, t)$$
 - $x_t$ ：带噪图片
 - $t$ ：当前 timestep
 
-训练损失函数：$$L = \left\|\epsilon - \epsilon_\theta(x_t,t)\right\|^2$$
+训练损失函数： $$L = \left \| \epsilon - \epsilon_ \theta(x_t,t)\right\| ^2$$
 这是一个 MSE（均方误差）损失. 
 含义：
 - $\epsilon$ ：真实加入的噪声
