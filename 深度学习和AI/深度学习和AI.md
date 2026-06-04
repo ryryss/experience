@@ -83,7 +83,7 @@ $$
 - $\epsilon$ ：高斯噪声（Gaussian Noise）
 
 
-含义：$\beta_t$ 由 schedule 得到, 当 $t$ 增大时 $\sqrt {1-\bar{\alpha}_t}\epsilon$ 的占比会越来越大. 最终 $x_t$ 会逐渐接近纯随机噪声.<br><br>
+含义: $\beta_t$ 由 schedule 得到, 当 $t$ 增大时 $\sqrt {1-\bar{\alpha}_t}\epsilon$ 的占比会越来越大. 最终 $x_t$ 会逐渐接近纯随机噪声.<br><br>
 
 预测噪声：
 $$\epsilon_\theta(x_t, t)$$
@@ -171,6 +171,78 @@ for i in range(self.n_T, 0, -1):
     )
 return x_i 
 ```
+
+## VAE
+在开始定向生成之前, 还需要考虑图片压缩Encoder, 以加快训练速度<br>
+```
+# Image→ Encoder→ Latent→ Decoder→ Image
+
+class AutoEncoder(nn.Module):
+    def __init__(self):
+        super().__init__()
+
+        self.encoder = nn.Sequential(
+            nn.Linear(784,128),
+            nn.ReLU(),
+            nn.Linear(128,64),
+            nn.ReLU(),
+            nn.Linear(64,32)
+        )
+
+        self.decoder = nn.Sequential(
+            nn.Linear(32,64),
+            nn.ReLU(),
+            nn.Linear(64,128),
+            nn.ReLU(),
+            nn.Linear(128,784),
+            nn.Sigmoid()
+        )
+```
+VAE相较于普通的Encoder, 能够让数据集中在一个规则空间内, 并符合高斯分布, 提高采样效率和准确度<br>
+```
+# https://github.com/pytorch/examples/tree/main/vae
+# 训练入口, 就是 forward 函数
+def forward(self, x):
+    mu, logvar = self.encode(x.view(-1, 784))
+
+# 首先将输入 x 通过一个全连接层 fc1，并经过 ReLU 激活函数，得到中间特征 h1
+# 利用h1训练2个特征
+def encode(self, x):
+    h1 = F.relu(self.fc1(x))
+    return self.fc21(h1), self.fc22(h1)
+
+# 将2个特征作为高斯参数输出   
+def reparameterize(self, mu, logvar):
+        std = torch.exp(0.5*logvar)
+        eps = torch.randn_like(std)
+        return mu + eps*std
+
+# 接着直接 decode, 然后使用loss函数估算偏差
+# Reconstruction + KL divergence losses summed over all elements and batch
+def loss_function(recon_x, x, mu, logvar):
+    BCE = F.binary_cross_entropy(recon_x, x.view(-1, 784), reduction='sum')
+
+    # see Appendix B from VAE paper:
+    # Kingma and Welling. Auto-Encoding Variational Bayes. ICLR, 2014
+    # https://arxiv.org/abs/1312.6114
+    # 0.5 * sum(1 + log(sigma^2) - mu^2 - sigma^2)
+    KLD = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
+
+    return BCE + KLD
+```
+具体的loss公式, 编码器输出的近似后验分布 $q(z|x) \sim \mathcal{N}(\mu, \sigma^2)$ 与标准正态先验 $p(z) \sim \mathcal{N}(0,1)$ 之间的 KL 散度为：
+
+$$
+D_{KL}\big(q(z|x) \parallel p(z)\big) = -\frac{1}{2} \sum_{j=1}^{J} \left(1 + \log(\sigma_j^2) - \mu_j^2 - \sigma_j^2\right)
+$$
+
+其中 $J$ 是潜在空间的维度，$\mu_j$ 和 $\sigma_j^2$ 分别为第 $j$ 维的均值和方差
+
+Stable Diffusiond 的 VAE 比较复杂, 以后再研究
+<br><br>
+## foo 还没想好标题
+已经知道如何从随机噪声得到原图, 那么就可以想办法去定向生成噪声, 再对定向生成的噪声进行还原, 从而得到期望的图片
+<br><br>
 ## Transformer
 
 <br><br>
