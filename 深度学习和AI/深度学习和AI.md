@@ -56,7 +56,7 @@ optimizer.step()
 ```
 <br>
 
-## diffusion
+## Diffusion DDPM
 如何让计算机绘制一张图片? 假设输入是纯噪点, 然后再一步一步降噪，直至还原成一张精美的图片<br>
 如何降噪? 降噪的依据和条件的什么? <br>
 使用带噪声的图片不断训练机器, 每训练一次就加一点噪声, 让机器记住噪声条件<br>
@@ -240,12 +240,86 @@ $$
 
 Stable Diffusiond 的 VAE 比较复杂, 以后再研究
 <br><br>
+## U-net
+Diffusion不规定具体使用哪种网络来实现去噪过程<br>
+U-net这个技术不需要细写, 最终做项目会使用transformer<br>
+https://github.com/jaxony/unet-pytorch
+<br><br>
+## Transformer
+Transformer是一个模型, PyTorch负责实现, 实际上前面写PyTorch的demo时有使用到一些相关的函数了<br>
+模型的整体流程: 输入tokens->embedding->positional encoding->attention->FFN->output<br>
+```
+# 1、Token: Transformer 的最小处理单位
+# 对于文字输入, 一个单词即为一个token; 对于图片来说, 需要将图片切块, 最小的块即为一个token
+from transformers import AutoTokenizer
+tokenizer = AutoTokenizer.from_pretrained(
+    "gpt2"
+)
+text = "I love cats"
+tokens = tokenizer(text)
+print(tokens)
+
+# 2、Embedding: 向量化
+# 每个token会生成embedding_dim这么长的数组, 训练完毕之后这些内容会被用来描述token与其他token的关系
+input_ids = tokens["input_ids"]
+embedding = nn.Embedding(
+    vocab_size=50000,
+    embedding_dim=768
+)
+x = embedding(
+    torch.tensor(input_ids)
+)
+
+# 3、Positional Encoding: 位置编码, Token的Position
+position_embedding = nn.Embedding(
+    num_embeddings=1024,
+    embedding_dim=768
+)
+seq_len = len(input_ids)
+position_ids = torch.arange(seq_len)
+pos = position_embedding(position_ids)
+# 使用方法是直接加到已向量化的token上
+x = x + pos
+
+# 4、Attention, 计算Token之间的关系
+# 输入x, x.shape = (32, 128, 768) 32个样本, 每个样本128个token, 每个token768维
+# 输出out, 其中每个token会吸收其他token的信息
+# 输出weight, 注意力矩阵, 表示每个token关注哪些token, 所以维度是token^2
+attention = nn.MultiheadAttention(
+    embed_dim=768,
+    num_heads=12,
+    batch_first=True
+)
+# 在self-attention下Q K V的来源都是x
+out, weights = attention(
+    x,
+    x,
+    x
+)
+# Residual + Norm 稳定数值, 下同
+x = norm1(x + out)
+
+# 还有更复杂的attention机制, 实现DiT论文时再讨论
+
+# 5、FNN Feed Forward Network
+# 分析信息, 提取特征, 进行非线性变换
+ffn = nn.Sequential(
+    nn.Linear(768,3072),
+    nn.GELU(),
+    nn.Linear(3072,768)
+)
+out = ffn(x)
+# Residual + Norm
+x = norm2(x + out)
+
+# 6、next Transformer Block or over
+```
+
+<br><br>
 ## foo 还没想好标题
 已经知道如何从随机噪声得到原图, 那么就可以想办法去定向生成噪声, 再对定向生成的噪声进行还原, 从而得到期望的图片
 <br><br>
-## Transformer
 
-<br><br>
 
 ## Tensor
 <br><br>
