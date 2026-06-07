@@ -74,7 +74,7 @@ $$
 $$
 
 $$
-\alpha_t = 1-\beta_t
+\alpha_t = 1 - \beta_t
 $$
 其中： 
 - $x_0$ ：原始图片
@@ -246,8 +246,9 @@ U-net这个技术不需要细写, 最终做项目会使用transformer<br>
 https://github.com/jaxony/unet-pytorch
 <br><br>
 ## Transformer
-Transformer是一个模型, PyTorch负责实现, 实际上前面写PyTorch的demo时有使用到一些相关的函数了<br>
-模型的整体流程: 输入tokens->embedding->positional encoding->attention->FFN->output<br>
+Transformer是一个模型, PyTorch负责实现, 前面写PyTorch的demo时有使用到一些相关的函数了<br>
+Transformer模型由block构成, block的输出可以作为下一个block的输入<br>
+一个block的大致流程: tokens->embedding->positional encoding->attention->FFN->output<br>
 ```
 # 1、Token: Transformer 的最小处理单位
 # 对于文字输入, 一个单词即为一个token; 对于图片来说, 需要将图片切块, 最小的块即为一个token
